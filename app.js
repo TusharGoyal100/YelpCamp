@@ -6,10 +6,13 @@ const session=require('express-session');
 const flash=require('connect-flash');
 const ExpressError=require('./utils/ExpressError');
 const methodOverride=require('method-override');
+const passport=require('passport');
+const LocalStrategy=require('passport-local');
+const User=require('./models/user')
 
-
-const campgrounds=require('./routes/campgrounds')
-const reviews=require('./routes/review')
+const userRoutes=require('./routes/users');
+const campgroundRoutes=require('./routes/campgrounds')
+const reviewRoutes=require('./routes/review')
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp')
 .then(()=>{
@@ -46,37 +49,30 @@ const sessionConfig={
 app.use(session(sessionConfig));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req,res,next)=>{
+    res.locals.currentUser=req.user;
     res.locals.success=req.flash('success');
     res.locals.error=req.flash('error');
     next();
 })
 
-const validateCampground=(req,res,next)=>{
-    
-    const {error}=campgroundSchema.validate(req.body);
-    if(error)
-    {   const msg=error.details.map(el=>el.message).join(',')
-        throw new ExpressError(msg,400);
-    }
-    else{
-        next();
-    }
-}
 
-const validateReview=(req,res,next)=>{
-    const {error}=reviewSchema.validate(req.body);
-    if(error)
-    {   const msg=error.details.map(el=>el.message).join(',')
-        throw new ExpressError(msg,400);
-    }
-    else{
-        next();
-    }
-}
+// app.get('/fakeUser',async(req,res)=>{
+//     const user=new User({email:'tushargoyal100@gmail.com',username:'tushar'});
+//     const newUser=await User.register(user,'tushar100@');
+//     res.send(newUser);
+// })
 
-app.use('/campgrounds',campgrounds);
-app.use('/campgrounds/:id/reviews',reviews);
+app.use('/',userRoutes);
+app.use('/campgrounds',campgroundRoutes);
+app.use('/campgrounds/:id/reviews',reviewRoutes);
 
 
 app.all('*',(req,res,next)=>{
