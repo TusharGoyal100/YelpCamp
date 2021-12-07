@@ -115,7 +115,7 @@ coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
  
 new mapboxgl.Popup()
 .setLngLat(coordinates)
-.setHTML(popUpMarkup)
+.setHTML(popUp)
 .addTo(map);
 });
  
