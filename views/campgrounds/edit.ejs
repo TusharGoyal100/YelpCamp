@@ -19,7 +19,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="image" class="form-label">Upload More Images</label>
-                    <input type="file" class="form-control" id="image" name="image" multiple required>
+                    <input type="file" class="form-control" id="image" name="image" multiple >
                     <div class="invalid-feedback">
                       This campground would look much better with a picture
                     </div>
@@ -37,6 +37,15 @@
                 <textarea class="form-control" type="text" id="description" name="campground[description]" required><%=campground.description%></textarea>
                 <div class="valid-feedback">Looks Good</div>
             </div>
+              <div class="mb-3">
+                  <% campground.image.forEach(function(img,i){%>
+                      <img src="<%=img.thumbnail%>" class="img-thumbnail" alt="">
+                      <div class="form-check-inline">
+                          <input type="checkbox" id="image-<%=i%>" name="deleteImages[]" value="<%=img.filename%>">
+                      </div>
+                      <label for="image-<%=i%>">Delete</label>
+                    <% }) %> 
+              </div>
                <div class="mb-3">       
                <button class="btn btn-success btn-info">Update Campground</button>
                </div>
