@@ -5,6 +5,7 @@ if(process.env.NODE_ENV !=="production")
 
 
 
+
 const express=require('express');
 const path=require('path');
 const mongoose=require('mongoose');
@@ -24,7 +25,11 @@ const userRoutes=require('./routes/users');
 const campgroundRoutes=require('./routes/campgrounds')
 const reviewRoutes=require('./routes/review')
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp')
+const MongoDbstore=require('connect-mongo');
+
+ const dbUrl=process.env.DB_URL||'mongodb://localhost:27017/yelp-camp';
+
+mongoose.connect(dbUrl)
 .then(()=>{
     console.log("CONNECTION OPEN")
 })
@@ -47,9 +52,25 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 app.use(mongoSanitize());
 
+const secret=process.env.SECRET||"thissholdbeabettersecret";
+
+const store=MongoDbstore.create({
+    mongoUrl:dbUrl,
+    touchAfter:24*3600,
+    crypto:{
+        secret
+    }
+})
+
+
+store.on("error",function(e){
+    console.log("SESSION STORE ERROR",e);
+})
+
 const sessionConfig={
+    store,
     name:'session',
-    secret:'thissholdbeabettersecret',
+    secret,
     resave:false,
     saveUninitialized:true,
     cookie:{
